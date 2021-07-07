@@ -1,0 +1,19 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:VCS.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="100"
+        x:Class="VCS.Views.NewHighlight"
+        Title="New highlight"
+        Width="200"
+        SizeToContent="Height">
+  <StackPanel>
+    <Label>Timestamp</Label>
+    <TextBox Text="{Binding Timestamp}"></TextBox>
+    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+      <Button Command="{Binding CancelCommand}">Cancel</Button>
+      <Button Command="{Binding ConfirmCommand}" IsEnabled="{Binding ValidTimestamp}">Confirm</Button>
+    </StackPanel>
+  </StackPanel>
+</Window>
