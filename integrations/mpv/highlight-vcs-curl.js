@@ -1,16 +1,20 @@
-mp.add_key_binding("h", highlight)
+mp.add_key_binding("h", highlightAtCurrentTime)
+mp.add_key_binding("g", sendCurrentFile)
 
 var serverUrl = 'http://localhost:33321/'
 
-function highlight() {
+function highlightAtCurrentTime() {
     var time = mp.get_property_number("time-pos")
     var inFile = mp.get_property("stream-open-filename")
-    // mp.utils.subprocess({ args: [
-    //     'curl',
-    //     '-X', 'POST',
-    //     '-d', JSON.stringify({ FileName: inFile, Timestamp: time }),
-    //     serverUrl
-    // ], cancellable: false})
+    highlight(inFile, time)
+}
+
+function sendCurrentFile() {
+    var inFile = mp.get_property("stream-open-filename")
+    highlight(inFile, null)
+}
+
+function highlight(file, time) {
     var result = mp.command_native({
         name: 'subprocess',
         playback_only: false,
@@ -21,16 +25,26 @@ function highlight() {
             '-o', '/dev/null',
             '-w', '%{http_code}',
             '-X', 'POST',
-            '-d', JSON.stringify({ FileName: inFile, Timestamp: time }),
+            '-d', escapeUnicode(JSON.stringify({ FileName: file, Timestamp: time })),
             serverUrl
         ]
     }).stdout
     if (result != '200') {
-        var msg = "Failed to add highlight at " + secondsToTimestamp(time)
+        var msg = ""
+        if (time != null) {
+            msg = "Failed to add highlight at " + secondsToTimestamp(time)
+        } else {
+            msg = "Failed to add current file"
+        }
         mp.osd_message(msg, 2)
         mp.msg.info(msg)
     } else {
-        var msg = "Added highlight at " + secondsToTimestamp(time)
+        var msg = ""
+        if (time != null) {
+            msg = "Added highlight at " + secondsToTimestamp(time)
+        } else {
+            msg = "Added current file"
+        }
         mp.osd_message(msg, 2)
         mp.msg.info(msg)
     }
@@ -65,3 +79,9 @@ function padStart(str, targetLength,padString) {
 function trunc(v) {
     return v < 0 ? Math.ceil(v) : Math.floor(v);
 };
+
+function escapeUnicode(str) {
+    return str.replace(/[^\x00-\x7F]/g, function (escape) {
+        return '\\u' + ('0000' + escape.charCodeAt().toString(16)).slice(-4);
+    })
+}

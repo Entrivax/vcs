@@ -293,7 +293,10 @@ namespace VCS.ViewModels
                                 var normalizedPath = Path.GetFullPath(data.FileName);
 
                                 var file = Files.FirstOrDefault(config => Path.GetFullPath(config.FileName) == normalizedPath) ?? await LoadFile(data.FileName, defaultConfig);
-                                file.Highlights.Add(new Timestamp((float)data.Timestamp));
+                                if (data.Timestamp != null)
+                                {
+                                    file.Highlights.Add(new Timestamp((float)data.Timestamp));
+                                }
                                 await response.WriteContentAsync("Ok");
                             }
                             catch
@@ -324,7 +327,7 @@ namespace VCS.ViewModels
         private class RemoteAccessData
         {
             public string? FileName { get; set; }
-            public float Timestamp { get; set; }
+            public float? Timestamp { get; set; }
         }
     }
 }
