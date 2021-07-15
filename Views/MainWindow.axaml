@@ -42,13 +42,13 @@
         </Grid>
         <Grid Grid.Row="1" Grid.Column="0" ColumnDefinitions="Auto,1*" RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto">
           <Label Grid.Row="0" Grid.Column="0" VerticalContentAlignment="Center">Thumbnail width</Label>
-          <NumericUpDown Grid.Row="0" Grid.Column="1" Increment="1" Minimum="1" Value="{Binding CurrentConfig.Width}"></NumericUpDown>
+          <NumericUpDown Grid.Row="0" Grid.Column="1" Increment="1" Minimum="1" Value="{Binding CurrentConfig.Width}" LostFocus="OnFocusLost"></NumericUpDown>
           <Label Grid.Row="1" Grid.Column="0" VerticalContentAlignment="Center">Padding</Label>
-          <NumericUpDown Grid.Row="1" Grid.Column="1" Increment="1" Minimum="0" Value="{Binding CurrentConfig.Padding}"></NumericUpDown>
+          <NumericUpDown Grid.Row="1" Grid.Column="1" Increment="1" Minimum="0" Value="{Binding CurrentConfig.Padding}" LostFocus="OnFocusLost"></NumericUpDown>
           <Label Grid.Row="2" Grid.Column="0" VerticalContentAlignment="Center">Columns</Label>
-          <NumericUpDown Grid.Row="2" Grid.Column="1" Increment="1" Minimum="1" Value="{Binding CurrentConfig.Columns}"></NumericUpDown>
+          <NumericUpDown Grid.Row="2" Grid.Column="1" Increment="1" Minimum="1" Value="{Binding CurrentConfig.Columns}" LostFocus="OnFocusLost"></NumericUpDown>
           <Label Grid.Row="3" Grid.Column="0" VerticalContentAlignment="Center">Rows</Label>
-          <NumericUpDown Grid.Row="3" Grid.Column="1" Increment="1" Minimum="1" Value="{Binding CurrentConfig.Rows}"></NumericUpDown>
+          <NumericUpDown Grid.Row="3" Grid.Column="1" Increment="1" Minimum="1" Value="{Binding CurrentConfig.Rows}" LostFocus="OnFocusLost"></NumericUpDown>
           <Label Grid.Row="4" Grid.Column="0" VerticalContentAlignment="Center">Highlights</Label>
           <StackPanel Grid.Row="4" Grid.Column="1">
             <ListBox SelectionMode="Multiple" Height="150" Items="{Binding CurrentConfig.Highlights}" Selection="{Binding HighlightsSelection}"></ListBox>

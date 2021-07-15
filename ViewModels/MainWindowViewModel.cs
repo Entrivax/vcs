@@ -1,5 +1,8 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Selection;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Markup.Xaml;
 using ReactiveUI;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp.PixelFormats;
@@ -146,6 +149,7 @@ namespace VCS.ViewModels
                     }
                     catch { }
                 }
+                await SaveSession();
             });
 
             ShowNewHighlightDialog = new Interaction<Unit, float?>();
@@ -158,6 +162,7 @@ namespace VCS.ViewModels
                     if (selectedFile != null)
                     {
                         selectedFile.Highlights.Add(new Timestamp(result.Value));
+                        await SaveSession();
                     }
                 }
             });
@@ -189,17 +194,19 @@ namespace VCS.ViewModels
                 }
             });
 
-            ClearFiles = ReactiveCommand.Create(() =>
+            ClearFiles = ReactiveCommand.CreateFromTask(async () =>
             {
                 Files.Clear();
+                await SaveSession();
             });
 
-            DeleteSelectedFile = ReactiveCommand.Create(() =>
+            DeleteSelectedFile = ReactiveCommand.CreateFromTask(async () =>
             {
                 if (SelectedFile != null)
                 {
                     var indexOf = Files.IndexOf(SelectedFile);
                     Files.Remove(SelectedFile);
+                    await SaveSession();
                     if (Files.Count == 0)
                     {
                         SelectedFile = null;
@@ -208,12 +215,13 @@ namespace VCS.ViewModels
                 }
             });
 
-            RemoveHighlights = ReactiveCommand.Create(() =>
+            RemoveHighlights = ReactiveCommand.CreateFromTask(async () =>
             {
                 HighlightsSelection.SelectedItems.ToList().ForEach((highlight) =>
                 {
                     CurrentConfig?.Highlights.Remove(highlight);
                 });
+                await SaveSession();
             });
 
             ToggleServer = ReactiveCommand.Create(() =>
@@ -228,6 +236,40 @@ namespace VCS.ViewModels
                     StartWebServer();
                 }
                 this.RaisePropertyChanged("ToggleServerText");
+            });
+
+        }
+
+        public async Task Load()
+        {
+            var sessionData = await CurrentSessionManager.Load();
+            if (sessionData != null)
+            {
+                if (sessionData.Files != null)
+                {
+                    for (var i = 0; i < sessionData.Files.Length; i++)
+                    {
+                        try
+                        {
+                            await sessionData.Files[i].LoadMedia();
+                            Files.Add(sessionData.Files[i]);
+                        }
+                        catch { }
+                    }
+                }
+            }
+        }
+
+        public async Task OnFocusLost(object sender, RoutedEventArgs e)
+        {
+            await SaveSession();
+        }
+
+        private async Task SaveSession()
+        {
+            await CurrentSessionManager.Save(new SessionData
+            {
+                Files = Files.ToArray()
             });
         }
 
@@ -297,6 +339,7 @@ namespace VCS.ViewModels
                                 {
                                     file.Highlights.Add(new Timestamp((float)data.Timestamp));
                                 }
+                                await SaveSession();
                                 await response.WriteContentAsync("Ok");
                             }
                             catch
@@ -324,6 +367,7 @@ namespace VCS.ViewModels
                 remoteAccess = null;
             }
         }
+
         private class RemoteAccessData
         {
             public string? FileName { get; set; }

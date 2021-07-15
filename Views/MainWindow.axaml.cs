@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using ReactiveUI;
@@ -20,7 +21,10 @@ namespace VCS.Views
             this.AttachDevTools();
 #endif
 
-            this.WhenActivated(d => d(ViewModel.ShowNewHighlightDialog.RegisterHandler(DoShowDialogAsync)));
+            this.WhenActivated(async d => {
+                d(ViewModel.ShowNewHighlightDialog.RegisterHandler(DoShowDialogAsync));
+                await ViewModel.Load();
+            });
         }
 
         private void InitializeComponent()
@@ -35,6 +39,11 @@ namespace VCS.Views
             window.DataContext = vm;
             var result = await window.ShowDialog<float?>(this);
             interaction.SetOutput(result);
+        }
+
+        public void OnFocusLost(object sender, RoutedEventArgs e)
+        {
+            ViewModel?.OnFocusLost(sender, e);
         }
     }
 }

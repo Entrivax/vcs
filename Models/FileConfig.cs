@@ -7,13 +7,24 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace VCS.Models
 {
     public class FileConfig : ReactiveObject
     {
-        public string FileName { get; }
+        string fileName;
+        public string FileName
+        {
+            get => fileName;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref fileName, value);
+                TimestampsValidated = false;
+                ThumbnailsValidated = false;
+            }
+        }
 
         int columns;
         public int Columns
@@ -61,6 +72,7 @@ namespace VCS.Models
         }
 
         TimeSpan[]? timestamps;
+        [JsonIgnore]
         public TimeSpan[]? Timestamps {
             get => timestamps;
             set
@@ -69,8 +81,10 @@ namespace VCS.Models
                 TimestampsValidated = true;
             }
         }
+        [JsonIgnore]
         public bool TimestampsValidated { get; private set; } = false;
         Thumbnail[]? thumbnails;
+        [JsonIgnore]
         public Thumbnail[]? Thumbnails
         {
             get => thumbnails;
@@ -80,15 +94,17 @@ namespace VCS.Models
                 ThumbnailsValidated = true;
             }
         }
+        [JsonIgnore]
         public bool ThumbnailsValidated { get; private set; } = false;
-
+        [JsonIgnore]
         public IMediaAnalysis? MediaInfo { get; private set; }
 
-        public ObservableCollection<Timestamp> Highlights { get; } = new ObservableCollection<Timestamp>();
+        public ObservableCollection<Timestamp> Highlights { get; set; } = new ObservableCollection<Timestamp>();
 
+        public FileConfig() : this("", null) { }
         public FileConfig(string fileName, FileConfig? defaultValues = null)
         {
-            this.FileName = fileName;
+            this.fileName = fileName;
             if (defaultValues != null)
             {
                 this.Columns = defaultValues.Columns;
