@@ -87,7 +87,7 @@ namespace VCS.Utils
                         codecs.Add(file.MediaInfo.PrimaryAudioStream.CodecName);
                     }
                     var fileInfoText = $"{file}\n" +
-                    $"{TimestampUtils.SecondsToTimestamp((float)file.MediaInfo.Duration.TotalSeconds)}, {FileSizeUtils.GetFileSizeString((long)((file.MediaInfo.Format.BitRate * file.MediaInfo.Format.Duration.TotalSeconds) / 8))}\n" +
+                    $"{TimestampUtils.SecondsToTimestamp((float)file.MediaInfo.Duration.TotalSeconds, true)}, {FileSizeUtils.GetFileSizeString((long)((file.MediaInfo.Format.BitRate * file.MediaInfo.Format.Duration.TotalSeconds) / 8))}\n" +
                     $"{codecs.Aggregate((a, b) => a + ", " + b)}\n" +
                     (file.MediaInfo.PrimaryVideoStream != null ? $"{file.MediaInfo.PrimaryVideoStream.Width} x {file.MediaInfo.PrimaryVideoStream.Height}, {String.Format("{0:0.#}", file.MediaInfo.PrimaryVideoStream.FrameRate)} fps" : "");
                     x
