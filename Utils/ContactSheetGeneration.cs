@@ -15,16 +15,23 @@ namespace VCS.Utils
 {
     public class ContactSheetGeneration
     {
-        public static Task<Image<Rgba32>> Generate(FileConfig file, TimeSpan[] timestamps, Image[] thumbnails, IReadOnlyFontCollection fontCollection, IProgress<ContactSheetGenerationProgressReport>? progress = null)
+        public static Task<Image<Rgba32>> Generate(FileConfig file, TimeSpan[] timestamps, Image?[] thumbnails, IReadOnlyFontCollection fontCollection, IProgress<ContactSheetGenerationProgressReport>? progress = null)
         {
             if (file.MediaInfo == null)
             {
                 throw new Exception("FileConfig is not loaded");
             }
+            var firstValidThumbnail = thumbnails.First((image) => image != null);
+            if (firstValidThumbnail == null)
+            {
+                throw new Exception("Unable to find a thumbnail");
+            }
             return Task.Run(() =>
             {
-                var width = (thumbnails[0].Width + file.BorderSize * 2) * file.Columns + file.Padding * (file.Columns + 1);
-                var height = (thumbnails[0].Height + file.BorderSize * 2) * file.Rows + file.Padding * (file.Rows + 1);
+                var thumbnailsWidth = firstValidThumbnail.Width;
+                var thumbnailsHeight = firstValidThumbnail.Height;
+                var width = (thumbnailsWidth + file.BorderSize * 2) * file.Columns + file.Padding * (file.Columns + 1);
+                var height = (thumbnailsHeight + file.BorderSize * 2) * file.Rows + file.Padding * (file.Rows + 1);
                 var image = new Image<Rgba32>(width, height);
                 image.Mutate(x =>
                 {
@@ -53,16 +60,21 @@ namespace VCS.Utils
                         var column = i % file.Columns;
                         var row = (i / file.Columns);
                         var imagePosition = new PointF(
-                            column * (file.Padding + thumbnails[0].Width + file.BorderSize * 2) + file.Padding + file.BorderSize,
-                            row * (file.Padding + thumbnails[0].Height + file.BorderSize * 2) + file.Padding + file.BorderSize
+                            column * (file.Padding + thumbnailsWidth + file.BorderSize * 2) + file.Padding + file.BorderSize,
+                            row * (file.Padding + thumbnailsHeight + file.BorderSize * 2) + file.Padding + file.BorderSize
                         );
                         var timestampText = TimestampUtils.SecondsToTimestamp((float)timestamps[i].TotalSeconds, true, timestamps[timestamps.Length - 1].TotalHours > 0, timestamps[timestamps.Length - 1].TotalMinutes > 0);
 
                         x
-                            .Fill(Color.FromRgb(194, 190, 197), new RectangleF(imagePosition - new PointF(file.BorderSize, file.BorderSize), new SizeF(thumbnails[0].Width + file.BorderSize * 2, thumbnails[0].Height + file.BorderSize * 2)))
-                            .DrawImage(thumbnails[i], (Point)imagePosition, 1f)
-                            .DrawText(timestampDrawingOptions, timestampText, font, Color.Black, new PointF(imagePosition.X + thumbnails[0].Width - file.BorderSize - 5, imagePosition.Y + thumbnails[0].Height - file.BorderSize - 5))
-                            .DrawText(timestampDrawingOptions, timestampText, font, Color.White, new PointF(imagePosition.X + thumbnails[0].Width - file.BorderSize - 5 - 1, imagePosition.Y + thumbnails[0].Height - file.BorderSize - 5 - 1));
+                            .Fill(Color.FromRgb(194, 190, 197), new RectangleF(imagePosition - new PointF(file.BorderSize, file.BorderSize), new SizeF(thumbnailsWidth + file.BorderSize * 2, thumbnailsHeight + file.BorderSize * 2)))
+                            .Fill(Color.Black, new RectangleF(imagePosition, new SizeF(thumbnailsWidth, thumbnailsHeight)));
+                        if (thumbnails[i] != null)
+                        {
+                            x.DrawImage(thumbnails[i], (Point)imagePosition, 1f);
+                        }
+                        x
+                            .DrawText(timestampDrawingOptions, timestampText, font, Color.Black, new PointF(imagePosition.X + thumbnailsWidth - file.BorderSize - 5, imagePosition.Y + thumbnailsHeight - file.BorderSize - 5))
+                            .DrawText(timestampDrawingOptions, timestampText, font, Color.White, new PointF(imagePosition.X + thumbnailsWidth - file.BorderSize - 5 - 1, imagePosition.Y + thumbnailsHeight - file.BorderSize - 5 - 1));
                     }
                     progress?.Report(new ContactSheetGenerationProgressReport(thumbnails.Length, thumbnails.Length));
                     var codecs = new List<string>();

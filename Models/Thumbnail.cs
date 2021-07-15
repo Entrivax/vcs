@@ -11,9 +11,9 @@ namespace VCS.Models
     {
         public TimeSpan TimeSpan { get; private set; }
 
-        public Image Image { get; private set; }
+        public Image? Image { get; private set; }
 
-        public Thumbnail(TimeSpan timeSpan, Image image)
+        public Thumbnail(TimeSpan timeSpan, Image? image)
         {
             this.TimeSpan = timeSpan;
             this.Image = image;
